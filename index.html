@@ -1,46 +1,134 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Расходы — Наталия</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Финансы — Наталия</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0f172a" />
+
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <header class="top">
+    <div class="top__title">
+      <h1>Мои расходы</h1>
+      <p class="muted">₽ • локально в браузере • можно экспортировать/импортировать</p>
+    </div>
 
-<h1>Мои расходы</h1>
+    <div class="top__actions">
+      <button id="addBtn" class="btn btn-primary">Добавить расход</button>
+      <button id="exportBtn" class="btn">Экспорт</button>
+      <button id="importBtn" class="btn">Импорт</button>
+      <input id="importFile" type="file" accept="application/json" hidden />
+    </div>
+  </header>
 
-<div class="summary">
-  <div>Всего: <span id="total">0 ₽</span></div>
-  <div>Бизнес: <span id="businessTotal">0 ₽</span></div>
-  <div>Личное: <span id="personalTotal">0 ₽</span></div>
-</div>
+  <main class="wrap">
+    <section class="card">
+      <div class="filters">
+        <div class="field">
+          <label for="monthSelect">Месяц:</label>
+          <select id="monthSelect"></select>
+        </div>
 
-<button id="addBtn">Добавить расход</button>
+        <div class="field">
+          <label for="typeFilter">Тип:</label>
+          <select id="typeFilter">
+            <option value="all">Все</option>
+            <option value="business">Бизнес</option>
+            <option value="personal">Личное</option>
+            <option value="investment">Инвестиции</option>
+          </select>
+        </div>
 
-<div id="formBlock" class="hidden">
-  <h3>Новый расход</h3>
+        <div class="field">
+          <label for="searchInput">Поиск:</label>
+          <input id="searchInput" type="text" placeholder="например: ЭКОНИКА, аренда, врач…" />
+        </div>
+      </div>
 
-  <label>Тип:</label>
-  <select id="kind">
-    <option value="business">Бизнес</option>
-    <option value="personal">Личное</option>
-  </select>
+      <div class="summary">
+        <div><span class="muted">Всего:</span> <strong id="sumAll">0 ₽</strong></div>
+        <div><span class="muted">Бизнес:</span> <strong id="sumBusiness">0 ₽</strong></div>
+        <div><span class="muted">Личное:</span> <strong id="sumPersonal">0 ₽</strong></div>
+        <div><span class="muted">Инвестиции:</span> <strong id="sumInvestment">0 ₽</strong></div>
+      </div>
 
-  <label>Категория:</label>
-  <select id="category"></select>
+      <div class="hint">
+        <strong>Подсказка:</strong> на GitHub Pages данные будут отдельные от “локальной версии”.
+        Чтобы перенести — нажми <em>Экспорт</em> локально и <em>Импорт</em> на сайте.
+      </div>
+    </section>
 
-  <label>Сумма:</label>
-  <input type="number" id="amount" placeholder="Введите сумму">
+    <section id="formBlock" class="card hidden">
+      <div class="formHead">
+        <h2>Новый расход</h2>
+        <button id="closeFormBtn" class="btn btn-ghost" title="Закрыть">✕</button>
+      </div>
 
-  <label>Комментарий:</label>
-  <input type="text" id="note" placeholder="Необязательно">
+      <div class="grid">
+        <div class="field">
+          <label for="date">Дата:</label>
+          <input id="date" type="date" />
+        </div>
 
-  <button id="saveBtn">Сохранить</button>
-</div>
+        <div class="field">
+          <label for="kind">Тип:</label>
+          <select id="kind">
+            <option value="business">Бизнес</option>
+            <option value="personal" selected>Личное</option>
+            <option value="investment">Инвестиции</option>
+          </select>
+        </div>
 
-<ul id="list"></ul>
+        <div class="field">
+          <label for="category">Категория:</label>
+          <select id="category"></select>
+        </div>
 
-<script src="app.js"></script>
+        <div class="field">
+          <label for="amount">Сумма (₽):</label>
+          <input id="amount" type="number" inputmode="numeric" placeholder="например 3000" min="0" />
+        </div>
+
+        <div class="field gridFull">
+          <label for="note">Комментарий (необязательно):</label>
+          <input id="note" type="text" placeholder="магазин / имя / что купила" />
+        </div>
+      </div>
+
+      <div class="formActions">
+        <button id="saveBtn" class="btn btn-primary">Сохранить</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="listHead">
+        <h2>Список</h2>
+        <button id="clearMonthBtn" class="btn btn-danger">Очистить выбранный месяц</button>
+      </div>
+
+      <ul id="list" class="list"></ul>
+      <div id="emptyState" class="empty muted">Пока записей нет. Нажми «Добавить расход».</div>
+    </section>
+  </main>
+
+  <footer class="footer muted">
+    Наталия • трекер расходов (без сервера) • данные хранятся в браузере
+  </footer>
+
+  <script src="app.js"></script>
+
+  <script>
+    // регистрация service worker (PWA)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>
+
