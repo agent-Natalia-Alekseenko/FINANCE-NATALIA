@@ -235,3 +235,5 @@ body{
   font-size:13px;
   color:var(--muted);
 }
+/* TEST */
+body { outline: 10px solid red !important; }
